@@ -1,0 +1,18 @@
+
+Summary
+Denizen is a casual RTS game where the player controls the actions of the colonization party of a procedurally generated 3D voxel planet. The player guides the members of the colony to gather resources, to arm and train settlers, and to explore the environment. As is common in many voxel games, players can freely build to their heart's desires. 
+
+Game Design
+Like other voxel games, players can place blocks in the world to build structures. Blocks can be placed anywhere near a distribution silo. Silos must be carried to a location by a villager, but once placed, can dispense blocks or items anywhere the player pleases within a certain radius.
+
+There will be numerous recipes for items, some basic, and others which can only be made with special equipment. Other RTS games focus unit creation on buildings, this game focuses on unit training and diversification at specific items or blocks, which may be located within structures for protection. Units are created at the spawn point (spaceship) when there are sufficient resources. They all begin as villagers, but can be trained to do other things.
+
+The player will see the world in first person perspective. The player cannot move through blocks, but can set certain map positions as "saved spots" to be warped to with a hot key. Additionally, areas that have not been previously explored are unviewable, areas without surveillance will be obscured by the "fog of war."
+
+Units can learn any skill with the correct training and items, and gain experience by performing associated actions. They can be named.
+
+Game Controls
+-	The player can move around the world with the common "wasd" control scheme, and look in any direction by pointing the mouse. 
+-	Clicking on a settler will select the settler and stats
+-	Dragging over several settlers will select them all
+-	Right clicking tells settlers where to go or what to do
