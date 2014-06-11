@@ -19,6 +19,10 @@ THREE.Scene.prototype.add = function(mesh) {};
  * @param {number} far
  */
 THREE.PerspectiveCamera = function(fov, aspect, near, far) {};
+/** @type {Object.<string, number>} */
+THREE.PerspectiveCamera.prototype.position;
+/** @type {number} the z coordinate of the camera */
+THREE.PerspectiveCamera.prototype.position.z;
 
 /**
  * Create a new renderer for a canvas
@@ -66,6 +70,14 @@ THREE.BoxGeometry = function(width, height, depth) {};
  * @param {THREE.MeshBasicMaterial} material
  */
 THREE.Mesh = function(geometry, material) {};
+/** @type {Object.<string, number>} */
+THREE.Mesh.prototype.rotation;
+/** @type {number} the rotation in x on the Mesh */
+THREE.Mesh.prototype.rotation.x;
+/** @type {number} the rotation in y on the Mesh */
+THREE.Mesh.prototype.rotation.y;
+/** @type {number} the rotation in z on the Mesh */
+THREE.Mesh.prototype.rotation.z;
 
 // =======================================================================
 // Materials
