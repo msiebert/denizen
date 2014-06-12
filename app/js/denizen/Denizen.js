@@ -49,9 +49,10 @@ denizen.Game.prototype.material;
 denizen.Game.prototype.mesh;
 
 denizen.Game.prototype.run = function() {
-	// var me = this;
-	// me.camera.z = me.player.z;
-	// me.render();
+	var me = this;
+	me.camera.position.z = me.player.z;
+	me.mesh.rotation.x += 0.01;
+	me.mesh.rotation.y += 0.02;
 }
 
 denizen.Game.start = function() {
@@ -60,32 +61,24 @@ denizen.Game.start = function() {
 	denizen.Game.animate();
 }
 
-var geometry, material, mesh;
-var renderer, scene, camera;
-
 denizen.Game.init = function() {
-
-	geometry = new THREE.BoxGeometry(200, 200, 200);
-	material = new THREE.MeshBasicMaterial( { color: 0xff0000, wireframe: true } );
-	mesh = new THREE.Mesh(geometry, material);
+	var geometry = new THREE.BoxGeometry(200, 200, 200);
+	var material = new THREE.MeshBasicMaterial( { color: 0xff0000, wireframe: true } );
+	game.mesh = new THREE.Mesh(geometry, material);
 	
 	game.scene = new THREE.Scene();
-	game.scene.add(mesh);
+	game.scene.add(game.mesh);
 
 	game.renderer = new THREE.CanvasRenderer();
-	game.renderer.setSize( window.innerWidth, window.innerHeight );
+	game.renderer.setSize(window.innerWidth, window.innerHeight);
 
 	game.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 10000);
-	game.camera.position.z = 1000;
 
 	document.body.appendChild(game.renderer.domElement);
 }
 
 denizen.Game.animate = function() {
 	requestAnimationFrame( denizen.Game.animate );
-	// game.run();
-
-	mesh.rotation.x += 0.01;
-	mesh.rotation.y += 0.02;
+	game.run();
 	game.renderer.render(game.scene, game.camera);
 }

@@ -7,7 +7,7 @@ CLOSURE="../lib/closure-library/closure/bin/build"
 	--output_mode=compiled \
 	--namespace="denizen" \
 	--compiler_jar=../lib/compiler.jar \
-	--compiler_flags="--compilation_level=WHITESPACE_ONLY" \
+	--compiler_flags="--compilation_level=ADVANCED" \
 	--compiler_flags="--jscomp_error=checkTypes" \
 	--compiler_flags="--jscomp_error=invalidCasts" \
 	--compiler_flags="--jscomp_error=deprecated" \
