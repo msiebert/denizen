@@ -1,0 +1,16 @@
+1. Install nginx.
+	sudo apt-get install nginx;
+2. Update nginx config to serve your files.
+	sudo mkdir -p /var/www/nginx;
+	sudo ln -s ~/path/to/denizen/project /var/www/nginx/denizen;
+	sudo mv /etc/nginx/sites-available/default /etc/nginx/sites-available/denizen;
+	sudo ln -s /etc/nginx/sites-available/denizen /etc/nginx/sites-enabled/denizen;
+	sudo vim /etc/nginx/sites-available/denizen;
+		a) above "#listen 80;" add "listen 8888;" (or really, whatever port you want)
+		b) change the line that starts with root to read "root /var/www/nginx/denizen/;"
+		c) save the file
+	sudo service nginx restart;
+3. Build the project.
+	cd ~/path/to/project/build;
+	./build.sh;
+4. Go to http://localhost:8888/app/Denizen.html
