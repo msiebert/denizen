@@ -1,8 +1,15 @@
 goog.provide('denizen');
 goog.provide('denizen.Game');
 
-denizen.play = function() {
-	var game = new denizen.Game();
+goog.require('denizen.util.GLHelper');
+
+/**
+ * This is the function that starts the whole game. Basically just creates
+ * the game object and then tells it to run
+ * @param {string} canvasId the id of the canvas to run the game on
+ */
+denizen.play = function(canvasId) {
+	var game = new denizen.Game(new denizen.util.GLHelper(), canvasId);
 	game.run();
 }
 
@@ -11,12 +18,15 @@ denizen.play = function() {
  * @const
  * type {number}
  */
-denizen.Game.refreshRate = 33;
+denizen.Game.refreshRate = 1000 / 30;
 /**
  * The main Game object
  * @constructor
+ * @param {denizen.util.GLHelper} gl the gl helper object to call methods on
+ * @param {string} canvasId the id of the canvas to run the game on
  */
-denizen.Game = function() {
+denizen.Game = function(gl, canvasId) {
+	gl.start(canvasId);
 	var me = this;
 }
 
