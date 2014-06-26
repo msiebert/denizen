@@ -3,10 +3,11 @@
 	<head>
 		<style>
 			canvas {
-				width: 80%;
+				width: 90%;
 				height: 80%;
 				margin-right: auto;
 				margin-left: auto;
+				display: inherit;
 			}
 		</style>
 
@@ -22,8 +23,9 @@
 	</head>
 
 	<body>
+		<canvas id="game-canvas"></canvas>
 		<script type="text/javascript">
-			denizen.play();
+			denizen.play(document.getElementById("game-canvas"));
 		</script>
 	</body>
 </html>
