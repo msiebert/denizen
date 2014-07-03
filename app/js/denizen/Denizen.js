@@ -1,7 +1,8 @@
 goog.provide('denizen');
 goog.provide('denizen.Game');
 
-goog.require('denizen.util.GLHelper');
+goog.require('denizen.graphics.GLHelper');
+goog.require('denizen.map.Chunk');
 
 /**
  * This is the function that starts the whole game. Basically just creates
@@ -9,7 +10,7 @@ goog.require('denizen.util.GLHelper');
  * @param {HTMLCanvasElement} canvas the canvas to run the game on
  */
 denizen.play = function(canvas) {
-	var game = new denizen.Game(new denizen.util.GLHelper(), canvas);
+	var game = new denizen.Game(new denizen.graphics.GLHelper(), canvas);
 	game.run();
 }
 
@@ -22,7 +23,7 @@ denizen.Game.refreshRate = 1000 / 30;
 /**
  * The main Game object
  * @constructor
- * @param {denizen.util.GLHelper} gl the gl helper object to call methods on
+ * @param {denizen.graphics.GLHelper} gl the gl helper object to call methods on
  * @param {HTMLCanvasElement} canvas the canvas to run the game on
  */
 denizen.Game = function(gl, canvas) {
@@ -30,10 +31,17 @@ denizen.Game = function(gl, canvas) {
 	me.gl = gl;
 	me.gl.start(canvas);
 	me.gl.clearColor(0.0, 0.0, 0.0, 1.0);
+	me.chunk = new denizen.map.Chunk();
 }
 
-/** @type {denizen.util.GLHelper} */
+/** @type {denizen.graphics.GLHelper} */
 denizen.Game.prototype.gl;
+
+/**
+ * The Game's current Chunk
+ * @type {denizen.map.Chunk}
+ */
+denizen.Game.prototype.chunk;
 
 /**
  * Run the game, executes the main game loop

@@ -20,8 +20,49 @@
 		<script type="text/javascript">
 			goog.require('denizen');
 		</script>
-	</head>
+		<script id="vertex-shader" type="x-shader/x-vertex">
+			attribute highp vec3 position;
+			attribute highp vec2 TextureCoord;
+			attribute highp vec3 VertexNormal;
 
+			uniform highp mat4 TransformationMatrix;
+			uniform highp mat4 PerspectiveMatrix;
+			uniform highp mat4 NormalMatrix;
+					 
+			varying highp vec2 vTextureCoord;
+			varying highp vec3 normal;
+
+			void main(void) {
+				highp vec4 mvPosition = TransformationMatrix * vec4(position, 1.0);
+				gl_Position = PerspectiveMatrix * mvPosition;
+				vTextureCoord = TextureCoord;
+				
+				highp vec4 transformedNormal = NormalMatrix * vec4(VertexNormal, 1.0);
+				normal = transformedNormal.xyz;
+			}
+		</script>
+		<script id="fragment-shader" type="x-shader/x-fragment">
+			varying highp vec2 vTextureCoord;
+			varying highp vec3 normal;
+
+			//lighting attributes
+			uniform highp vec3 ambientLight;
+			uniform highp vec3 directionalLightColor;
+			uniform highp vec3 lightDirection;
+
+			uniform sampler2D uSampler;
+			 
+			void main(void) {
+				highp vec3 lightingDirection = normalize(lightDirection);
+				
+				highp float lightIntensity = max(dot(normalize(normal), lightingDirection), 0.0);
+				highp vec3 vLighting = ambientLight + (directionalLightColor * lightIntensity);
+
+				highp vec4 texelColor = texture2D(uSampler, vec2(vTextureCoord.s, vTextureCoord.t));
+				gl_FragColor = vec4(texelColor.rgb * vLighting, texelColor.a);
+			}
+		</script>
+	</head>
 	<body>
 		<canvas id="game-canvas"></canvas>
 		<script type="text/javascript">
