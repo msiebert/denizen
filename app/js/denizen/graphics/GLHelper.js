@@ -2,8 +2,6 @@ goog.provide('denizen.graphics.GLHelper');
 
 goog.require('goog.vec.Mat4');
 
-denizen.graphics.GLHelper.prototype.mat4 = goog.vec.Mat4;
-
 /**
  * @private
  * @enum {number}
@@ -28,6 +26,8 @@ denizen.graphics.GLHelper = function() {
 	me.mvNormalMatrix = me.mat4.createFloat32Identity();
 	me.pMatrix = me.mat4.createFloat32Identity();
 }
+/**@private*/
+denizen.graphics.GLHelper.prototype.mat4 = goog.vec.Mat4;
 
 /**@private @type {HTMLCanvasElement}*/
 denizen.graphics.GLHelper.prototype.canvas;
