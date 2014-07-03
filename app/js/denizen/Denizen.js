@@ -2,7 +2,9 @@ goog.provide('denizen');
 goog.provide('denizen.Game');
 
 goog.require('denizen.graphics.GLHelper');
+goog.require('denizen.map.blocks.BlockId');
 goog.require('denizen.map.Chunk');
+goog.require('denizen.player.Player');
 
 /**
  * This is the function that starts the whole game. Basically just creates
@@ -32,10 +34,19 @@ denizen.Game = function(gl, canvas) {
 	me.gl.start(canvas);
 	me.gl.clearColor(0.0, 0.0, 0.0, 1.0);
 	me.chunk = new denizen.map.Chunk();
+	me.chunk.blocks[0][0][0].id = denizen.map.blocks.BlockId.Blue;
+	me.chunk.blocks[0][0][0].active = true;
+	me.player = new denizen.player.Player(0, 0, 0, 0, 0, 0);
 }
 
 /** @type {denizen.graphics.GLHelper} */
 denizen.Game.prototype.gl;
+
+/**
+ * The Game's player
+ * @type {denizen.player.Player}
+ */
+denizen.Game.prototype.player;
 
 /**
  * The Game's current Chunk
@@ -73,4 +84,5 @@ denizen.Game.prototype.update = function() {
 denizen.Game.prototype.render = function() {
 	var me = this;
 	me.gl.clear();
+	me.gl.drawChunk(me.chunk, me.player);
 }

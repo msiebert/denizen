@@ -3,12 +3,6 @@ goog.provide('denizen.map.Chunk');
 goog.require('denizen.map.Block');
 goog.require('denizen.map.blocks.BlockId');
 
-/**
- * The dimensions of a Chunk
- * @const
- * @type {number}
- */
-denizen.map.Chunk.size = 32;
 
 /**
  * @constructor
@@ -32,6 +26,13 @@ denizen.map.Chunk = function() {
 		}
 	}
 }
+
+/**
+ * The dimensions of a Chunk
+ * @const
+ * @type {number}
+ */
+denizen.map.Chunk.size = 32;
 
 /**
  * The 3D array of Blocks that make up this Chunk

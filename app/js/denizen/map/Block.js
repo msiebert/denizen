@@ -16,7 +16,7 @@ denizen.map.Block = function(id, active) {
 
 /**
  * The id of this Block's type
- * @type {number}
+ * @type {denizen.map.blocks.BlockId}
  */
 denizen.map.Block.prototype.id;
 

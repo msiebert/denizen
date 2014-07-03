@@ -1,5 +1,7 @@
 goog.provide('denizen.graphics.GLHelper');
 
+goog.require('denizen.map.blocks.BlockId');
+goog.require('denizen.player.Player');
 goog.require('goog.vec.Mat4');
 
 /**
@@ -26,6 +28,10 @@ denizen.graphics.GLHelper = function() {
 	me.mvNormalMatrix = me.mat4.createFloat32Identity();
 	me.pMatrix = me.mat4.createFloat32Identity();
 }
+
+//------------------------------------------------------------------------
+// Instance Variables
+//------------------------------------------------------------------------
 /**@private*/
 denizen.graphics.GLHelper.prototype.mat4 = goog.vec.Mat4;
 
@@ -34,6 +40,7 @@ denizen.graphics.GLHelper.prototype.canvas;
 /**@private @type {WebGLRenderingContext | null}*/
 denizen.graphics.GLHelper.prototype.gl;
 
+// Matrix Variables
 /**@private @type {number}*/
 denizen.graphics.GLHelper.prototype.selectedMatrix = 0;
 /**@private @type {!Float32Array}*/
@@ -47,6 +54,19 @@ denizen.graphics.GLHelper.prototype.pMatrix;
 /**@private @type {Array.<!Float32Array>}*/
 denizen.graphics.GLHelper.prototype.pMatrixStack = new Array();
 
+//Shader Variables
+/**@private @type {WebGLProgram}*/
+denizen.graphics.GLHelper.prototype.shaderProgram;
+/**@private @type {WebGLUniformLocation}*/
+denizen.graphics.GLHelper.prototype.directionalLightColor;
+/**@private @type {WebGLUniformLocation}*/
+denizen.graphics.GLHelper.prototype.lightDirection;
+/**@private @type {WebGLUniformLocation}*/
+denizen.graphics.GLHelper.prototype.ambientLight;
+
+//------------------------------------------------------------------------
+// Public Methods
+//------------------------------------------------------------------------
 /**
  * Start up the WebGL context.
  * @param {HTMLCanvasElement} canvas to run the game on
@@ -85,6 +105,50 @@ denizen.graphics.GLHelper.prototype.clearColor = function(r, g, b, a) {
 denizen.graphics.GLHelper.prototype.clear = function() {
 	var me = this;
 	me.gl.clear(me.gl.COLOR_BUFFER_BIT | me.gl.DEPTH_BUFFER_BIT);
+}
+
+/**
+ * Draw a Chunk to the screen
+ * @this {denizen.graphics.GLHelper}
+ * @param {denizen.map.Chunk} chunk the Chunk to draw
+ * @param {denizen.player.Player} player the Player who's view should be drawn
+ * @return {void}
+ */
+denizen.graphics.GLHelper.prototype.drawChunk = function(chunk, player) {
+	var me = this;
+	//translate by the player's position
+	var rotated = me.mat4.makeRotateY(me.mat4.createFloat32Identity(), me.degreesToRadians(player.rotationX));
+	//var rotated2 = me.mat4.makeRotateX(me.mat4.createFloat32Identity(), me.degreesToRadians(player.rotationY));
+	//rotated = me.mat4.multMat(rotated, rotated2, rotated);
+	var translated = me.mat4.makeTranslate(me.mat4.createFloat32Identity(), player.x, player.y, player.z);
+	me.mvMatrix = /**@type {!Float32Array}*/(me.mat4.multMat(rotated, translated, me.mvMatrix));
+	me.updateNormalMatrix();
+
+	//set the shader matrices
+	var shaderPMatrix = me.gl.getUniformLocation(me.shaderProgram, "PerspectiveMatrix");
+	me.gl.uniformMatrix4fv(shaderPMatrix, false, new Float32Array(me.pMatrix));
+
+	//lighting stuff
+	var light = [0, 0, 0];
+	light = me.mat4.multVec3(me.mvMatrix, light, light);
+	me.gl.uniform3f(me.directionalLightColor, 1, 1, 1);
+	me.gl.uniform3f(me.lightDirection, light[0], light[1], light[2]);
+	me.gl.uniform3f(me.ambientLight, .4, .4, .4);
+
+	me.gl.activeTexture(me.gl.TEXTURE0);
+
+	//loop through all the blocks in the chunk and draw them
+	chunk.blocks.forEach(/**@param {Array.<Array.<denizen.map.Block>>} blocks*/ function(blocks) {
+		blocks.forEach(/**@param {Array.<denizen.map.Block>} blocks*/ function(blocks) {
+			blocks.forEach(/**@param {denizen.map.Block} block*/ function(block) {
+				if (block.active && block.id != denizen.map.blocks.BlockId.None) {
+					console.log('should draw', block);
+					//me.drawBlock(block);
+				}
+			});
+		});
+	});
+
 }
 
 //------------------------------------------------------------------------
@@ -249,8 +313,8 @@ denizen.graphics.GLHelper.prototype.initShaders = function(vertexId, fragmentId)
 	me.vertexNormal = me.gl.getAttribLocation(me.shaderProgram, 'VertexNormal');
 	me.gl.enableVertexAttribArray(me.vertexNormal);
 
-	me.directionLightColor = me.gl.getUniformLocation(me.shaderProgram, 'directionalLightColor');
-	var location = /**@type {number}*/(me.gl.getUniform(me.shaderProgram, me.directionLightColor));
+	me.directionalLightColor = me.gl.getUniformLocation(me.shaderProgram, 'directionalLightColor');
+	var location = /**@type {number}*/(me.gl.getUniform(me.shaderProgram, me.directionalLightColor));
 	me.gl.enableVertexAttribArray(location);
 
 	me.lightDirection = me.gl.getUniformLocation(me.shaderProgram, 'lightDirection');
@@ -278,4 +342,15 @@ denizen.graphics.GLHelper.prototype.loadShader = function(script) {
 		currentChild = currentChild.nextSibling;
 	}
 	return code;
+}
+
+/**
+ * Helper function that changes degrees to radians
+ * @private
+ * @this {denizen.graphics.GLHelper}
+ * @param {number} degrees the degrees to use
+ * @return {number} the value in radians
+ */
+denizen.graphics.GLHelper.prototype.degreesToRadians = function(degrees) {
+	return degrees * Math.PI / 180;
 }
