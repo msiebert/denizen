@@ -1,5 +1,6 @@
 goog.provide('denizen.graphics.GLHelper');
 
+goog.require('denizen.graphics.textures.TextureFactory');
 goog.require('denizen.map.blocks.BlockId');
 goog.require('denizen.player.Player');
 goog.require('goog.vec.Mat4');
@@ -8,7 +9,7 @@ goog.require('goog.vec.Mat4');
  * @private
  * @enum {number}
  */
-denizen.graphics.GLHelper.MatrixMode = {
+denizen.graphics.MatrixMode = {
 	GL_MODELVIEW: 0,
 	GL_PROJECTION: 1	
 };
@@ -35,10 +36,12 @@ denizen.graphics.GLHelper = function() {
 /**@private*/
 denizen.graphics.GLHelper.prototype.mat4 = goog.vec.Mat4;
 
-/**@private @type {HTMLCanvasElement}*/
+/**@type {HTMLCanvasElement}*/
 denizen.graphics.GLHelper.prototype.canvas;
 /**@private @type {WebGLRenderingContext | null}*/
 denizen.graphics.GLHelper.prototype.gl;
+/**@private @type {denizen.graphics.textures.TextureFactory}*/
+denizen.graphics.GLHelper.prototype.textureFactory;
 
 // Matrix Variables
 /**@private @type {number}*/
@@ -57,12 +60,20 @@ denizen.graphics.GLHelper.prototype.pMatrixStack = new Array();
 //Shader Variables
 /**@private @type {WebGLProgram}*/
 denizen.graphics.GLHelper.prototype.shaderProgram;
+//uniforms
 /**@private @type {WebGLUniformLocation}*/
 denizen.graphics.GLHelper.prototype.directionalLightColor;
 /**@private @type {WebGLUniformLocation}*/
 denizen.graphics.GLHelper.prototype.lightDirection;
 /**@private @type {WebGLUniformLocation}*/
 denizen.graphics.GLHelper.prototype.ambientLight;
+//attributes
+/**@private @type {number}*/
+denizen.graphics.GLHelper.prototype.vertexPosition;
+/**@private @type {number}*/
+denizen.graphics.GLHelper.prototype.vertexTexture;
+/**@private @type {number}*/
+denizen.graphics.GLHelper.prototype.vertexNormal;
 
 //------------------------------------------------------------------------
 // Public Methods
@@ -81,6 +92,7 @@ denizen.graphics.GLHelper.prototype.start = function(canvas) {
 	me.gl.viewport(0, 0, me.canvas.width, me.canvas.height);
 	me.gl.enable(me.gl.DEPTH_TEST);
 	me.gl.depthFunc(me.gl.LEQUAL);
+	me.textureFactory = new denizen.graphics.textures.TextureFactory(me.gl);
 }
 
 /**
@@ -108,6 +120,23 @@ denizen.graphics.GLHelper.prototype.clear = function() {
 }
 
 /**
+ * Create the perspective. Overwrites the original perspective matrix.
+ * @this {denizen.graphics.GLHelper}
+ * @param {number} fovy the field of view angle
+ * @param {number} width the width of the viewport
+ * @param {number} height the height of the viewport
+ * @param {number} near the near plane
+ * @param {number} far the far plane
+ * @return {void}
+ */
+denizen.graphics.GLHelper.prototype.perspective = function(fovy, width, height, near, far) {
+	var me = this;
+	var temp = me.mat4.createFloat32Identity();
+	me.pMatrix = /**@type {!Float32Array}*/(me.mat4.makePerspective(temp, me.degreesToRadians(fovy), width / height, near, far));
+}
+
+
+/**
  * Draw a Chunk to the screen
  * @this {denizen.graphics.GLHelper}
  * @param {denizen.map.Chunk} chunk the Chunk to draw
@@ -118,8 +147,6 @@ denizen.graphics.GLHelper.prototype.drawChunk = function(chunk, player) {
 	var me = this;
 	//translate by the player's position
 	var rotated = me.mat4.makeRotateY(me.mat4.createFloat32Identity(), me.degreesToRadians(player.rotationX));
-	//var rotated2 = me.mat4.makeRotateX(me.mat4.createFloat32Identity(), me.degreesToRadians(player.rotationY));
-	//rotated = me.mat4.multMat(rotated, rotated2, rotated);
 	var translated = me.mat4.makeTranslate(me.mat4.createFloat32Identity(), player.x, player.y, player.z);
 	me.mvMatrix = /**@type {!Float32Array}*/(me.mat4.multMat(rotated, translated, me.mvMatrix));
 	me.updateNormalMatrix();
@@ -138,17 +165,19 @@ denizen.graphics.GLHelper.prototype.drawChunk = function(chunk, player) {
 	me.gl.activeTexture(me.gl.TEXTURE0);
 
 	//loop through all the blocks in the chunk and draw them
-	chunk.blocks.forEach(/**@param {Array.<Array.<denizen.map.Block>>} blocks*/ function(blocks) {
-		blocks.forEach(/**@param {Array.<denizen.map.Block>} blocks*/ function(blocks) {
-			blocks.forEach(/**@param {denizen.map.Block} block*/ function(block) {
-				if (block.active && block.id != denizen.map.blocks.BlockId.None) {
-					console.log('should draw', block);
-					//me.drawBlock(block);
-				}
-			});
-		});
-	});
-
+	chunk.forEachBlock(
+		/**
+		 * @param {denizen.map.Block} block
+		 * @param {number} x
+		 * @param {number} y
+		 * @param {number} z
+		 */
+		function(block, x, y, z) {
+			if (block.active && block.id != denizen.map.blocks.BlockId.None) {
+				me.drawBlock(block, x, y, z);
+			}
+		}
+	);
 }
 
 //------------------------------------------------------------------------
@@ -159,7 +188,7 @@ denizen.graphics.GLHelper.prototype.drawChunk = function(chunk, player) {
  * Switch between the matrices
  * @private
  * @this {denizen.graphics.GLHelper}
- * @param {denizen.graphics.GLHelper.MatrixMode} mode the matrix to use
+ * @param {denizen.graphics.MatrixMode} mode the matrix to use
  * @return {void}
  */
 denizen.graphics.GLHelper.prototype.matrixMode = function(mode) {
@@ -241,7 +270,7 @@ denizen.graphics.GLHelper.prototype.updateNormalMatrix = function() {
  */
 denizen.graphics.GLHelper.prototype.modelViewIsSelected = function() {
 	var me = this;
-	return me.selectedMatrix == denizen.graphics.GLHelper.MatrixMode.GL_MODELVIEW;
+	return me.selectedMatrix == denizen.graphics.MatrixMode.GL_MODELVIEW;
 }
 
 //------------------------------------------------------------------------
@@ -354,3 +383,68 @@ denizen.graphics.GLHelper.prototype.loadShader = function(script) {
 denizen.graphics.GLHelper.prototype.degreesToRadians = function(degrees) {
 	return degrees * Math.PI / 180;
 }
+
+/**
+ * A function that will draw a block
+ * @private
+ * @this {denizen.graphics.GLHelper}
+ * @param {denizen.map.Block} block
+ * @param {number} x
+ * @param {number} y
+ * @param {number} z
+ * @return {void}
+ */
+denizen.graphics.GLHelper.prototype.drawBlock = function(block, x, y, z) {
+	var me = this;
+	//first check if the texture is loaded, cause if it's not, there's no point in rendering
+	var texture = me.textureFactory.get(block.id);
+	if (!texture.texture) {
+		return;
+	}
+
+	me.matrixMode(denizen.graphics.MatrixMode.GL_MODELVIEW);
+	me.pushMatrix();
+	var translated = me.mat4.makeTranslate(me.mat4.createFloat32Identity(), x, y, z);
+	me.mvMatrix = /**@type {!Float32Array}*/(me.mat4.multMat(me.mvMatrix, translated, me.mvMatrix));
+	me.updateNormalMatrix();
+
+	//update shaders
+	var shaderMVMatrix = me.gl.getUniformLocation(me.shaderProgram, "TransformationMatrix");
+	me.gl.uniformMatrix4fv(shaderMVMatrix, false, new Float32Array(me.mvMatrix));
+	me.gl.uniform1i(me.gl.getUniformLocation(me.shaderProgram, "uSampler"), 0);
+	var shaderNMatrix = me.gl.getUniformLocation(me.shaderProgram, "NormalMatrix");
+	me.gl.uniformMatrix4fv(shaderNMatrix, false, new Float32Array(me.mvNormalMatrix));
+
+	//handle vertices
+	var vertexBuffer = me.gl.createBuffer();
+	me.gl.bindBuffer(me.gl.ARRAY_BUFFER, vertexBuffer);
+	me.gl.bufferData(me.gl.ARRAY_BUFFER, new Float32Array(denizen.map.Block.vertices), me.gl.STATIC_DRAW);
+	me.gl.vertexAttribPointer(me.vertexPosition, 3, me.gl.FLOAT, false, 0, 0);
+
+	//handle textures
+	var textureBuffer = me.gl.createBuffer();
+	me.gl.bindBuffer(me.gl.ARRAY_BUFFER, textureBuffer);
+	me.gl.bufferData(me.gl.ARRAY_BUFFER, new Float32Array(denizen.map.Block.textureCoords), me.gl.STATIC_DRAW);
+	me.gl.enableVertexAttribArray(me.vertexTexture);
+	me.gl.vertexAttribPointer(me.vertexTexture, 2, me.gl.FLOAT, false, 0, 0);
+
+	me.gl.bindTexture(me.gl.TEXTURE_2D, texture.texture);
+
+	//triangles
+	var triangleBuffer = me.gl.createBuffer();
+	me.gl.bindBuffer(me.gl.ELEMENT_ARRAY_BUFFER, triangleBuffer);
+	me.gl.bufferData(me.gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(denizen.map.Block.triangles), me.gl.STATIC_DRAW);
+
+	//normals
+	var normalBuffer = me.gl.createBuffer();
+	me.gl.bindBuffer(me.gl.ARRAY_BUFFER, normalBuffer);
+	me.gl.bufferData(me.gl.ARRAY_BUFFER, new Float32Array(denizen.map.Block.vertexNormals), me.gl.STATIC_DRAW);
+	me.gl.bindBuffer(me.gl.ARRAY_BUFFER, normalBuffer);
+	me.gl.vertexAttribPointer(me.vertexNormal, 3, me.gl.FLOAT, false, 0, 0);
+
+	//draw
+	me.gl.drawElements(me.gl.TRIANGLES, denizen.map.Block.triangles.length, me.gl.UNSIGNED_SHORT, 0);
+
+	me.popMatrix();
+}
+

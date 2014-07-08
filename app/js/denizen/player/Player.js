@@ -8,17 +8,18 @@ goog.provide('denizen.player.Player');
  * @param {number} z the player's starting coordinate
  * @param {number} rotationX the player's starting rotation
  * @param {number} rotationY the player's starting rotation
- * @param {number} rotationZ the player's starting rotation
  */
-denizen.player.Player = function(x, y, z, rotationX, rotationY, rotationZ) {
+denizen.player.Player = function(x, y, z, rotationX, rotationY) {
 	var me = this;
 	me.x = x;
 	me.y = y;
 	me.z = z;
+	me.rotationX = rotationX;
+	me.rotationY = rotationY;
 }
 
 //------------------------------------------------------------------------
-// Class Variables
+// Instance Variables
 //------------------------------------------------------------------------
 
 /**@type {number}*/
@@ -31,5 +32,3 @@ denizen.player.Player.prototype.z;
 denizen.player.Player.prototype.rotationX;
 /**@type {number}*/
 denizen.player.Player.prototype.rotationY;
-/**@type {number}*/
-denizen.player.Player.prototype.rotationZ;

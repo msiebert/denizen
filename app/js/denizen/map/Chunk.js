@@ -34,8 +34,34 @@ denizen.map.Chunk = function() {
  */
 denizen.map.Chunk.size = 32;
 
+//------------------------------------------------------------------------
+// Instance Variables
+//------------------------------------------------------------------------
+
 /**
  * The 3D array of Blocks that make up this Chunk
  * @type {Array.<Array.<Array.<denizen.map.Block>>>}
  */
 denizen.map.Chunk.prototype.blocks;
+
+//------------------------------------------------------------------------
+// Public Methods
+//------------------------------------------------------------------------
+
+/**
+ * Perform an action on all blocks in the Chunk
+ * @this {denizen.map.Chunk}
+ * @param {function(denizen.map.Block, number, number, number): *} f
+ * @return {void}
+ */
+denizen.map.Chunk.prototype.forEachBlock = function(f) {
+	var me = this;
+	var size = denizen.map.Chunk.size;
+	for (var i = 0; i < size; i++) {
+		for (var j = 0; j < size; j++) {
+			for (var k = 0; k < size; k++) {
+				f(me.blocks[i][j][k], i, j, k);
+			}
+		}
+	}
+}
