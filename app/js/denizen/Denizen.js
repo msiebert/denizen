@@ -32,13 +32,14 @@ denizen.Game = function(gl, canvas) {
 	var me = this;
 	me.gl = gl;
 	me.gl.start(canvas);
+	me.gl.viewport(window.innerWidth, window.innerHeight);
 	me.gl.clearColor(0.9, 0.9, 0.9, 1.0);
 	me.chunk = new denizen.map.Chunk();
 	me.chunk.blocks[0][0][0].id = denizen.map.blocks.BlockId.Blue;
 	me.chunk.blocks[0][0][0].active = true;
 	me.chunk.blocks[3][1][0].id = denizen.map.blocks.BlockId.Blue;
 	me.chunk.blocks[3][1][0].active = true;
-	me.player = new denizen.player.Player(0, 0, -10, 0, 0);
+	me.player = new denizen.player.Player(5, 0, -10, 0, 0);
 }
 
 /** @type {denizen.graphics.GLHelper} */

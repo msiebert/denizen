@@ -11,7 +11,7 @@ goog.require('goog.vec.Mat4');
  */
 denizen.graphics.MatrixMode = {
 	GL_MODELVIEW: 0,
-	GL_PROJECTION: 1	
+	GL_PROJECTION: 1
 };
 
 /**@private @const @type {number}*/
@@ -133,6 +133,22 @@ denizen.graphics.GLHelper.prototype.perspective = function(fovy, width, height, 
 	var me = this;
 	var temp = me.mat4.createFloat32Identity();
 	me.pMatrix = /**@type {!Float32Array}*/(me.mat4.makePerspective(temp, me.degreesToRadians(fovy), width / height, near, far));
+}
+
+/**
+ * Change the size of the viewport
+ * @this {denizen.graphics.GLHelper}
+ * @param {number} width the new width
+ * @param {number} height the new height
+ * @return {void}
+ */
+denizen.graphics.GLHelper.prototype.viewport = function(width, height) {
+	var me = this;
+	me.canvas.width = width;
+	me.canvas.height = height;
+	me.canvas.style.width = width + 'px';
+	me.canvas.style.height = height + 'px';
+	me.gl.viewport(0, 0, width, height);
 }
 
 
@@ -287,12 +303,12 @@ denizen.graphics.GLHelper.prototype.modelViewIsSelected = function() {
 denizen.graphics.GLHelper.prototype.initGL = function(canvas) {
 	var me = this;
 	/**@type {WebGLRenderingContext | null}*/me.gl = null;
-	
+
 	try {
 		me.gl = /**@type {WebGLRenderingContext}*/ (canvas.getContext('webgl'));
 	}
 	catch(e) {}
-	
+
 	if (!me.gl) {
 		alert('Unable to initialize WebGL. Your browser may not support it.');
 		me.gl = null;

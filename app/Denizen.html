@@ -3,10 +3,10 @@
 	<head>
 		<style>
 			canvas {
-				width: 90%;
-				height: 80%;
-				margin-right: auto;
-				margin-left: auto;
+				position: absolute;
+				left: 0px;
+				top: 0px;
+				padding:0px;
 				display: inherit;
 			}
 		</style>
@@ -28,7 +28,7 @@
 			uniform highp mat4 TransformationMatrix;
 			uniform highp mat4 PerspectiveMatrix;
 			uniform highp mat4 NormalMatrix;
-					 
+
 			varying highp vec2 vTextureCoord;
 			varying highp vec3 normal;
 
@@ -36,7 +36,7 @@
 				highp vec4 mvPosition = TransformationMatrix * vec4(position, 1.0);
 				gl_Position = PerspectiveMatrix * mvPosition;
 				vTextureCoord = TextureCoord;
-				
+
 				highp vec4 transformedNormal = NormalMatrix * vec4(VertexNormal, 1.0);
 				normal = transformedNormal.xyz;
 			}
@@ -51,10 +51,10 @@
 			uniform highp vec3 lightDirection;
 
 			uniform sampler2D uSampler;
-			 
+
 			void main(void) {
 				highp vec3 lightingDirection = normalize(lightDirection);
-				
+
 				highp float lightIntensity = max(dot(normalize(normal), lightingDirection), 0.0);
 				highp vec3 vLighting = ambientLight + (directionalLightColor * lightIntensity);
 
