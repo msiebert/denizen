@@ -22,5 +22,6 @@
 
 ../lib/closure-library/closure/bin/build/depswriter.py \
 	--root_with_prefix="../app/js/denizen ./app/js/denizen" \
+	--root_with_prefix="../lib/closure-library ./lib/closure-library" \
 	> ../app/js/deps.js;
 
